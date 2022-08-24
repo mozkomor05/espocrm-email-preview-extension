@@ -1,0 +1,12 @@
+{
+    "js": {
+        "client/modules/email-combined-view/src/js/bundled.min.js": [
+            "client/modules/email-combined-view/src/js/script-to-append.js"
+        ]
+    },
+    "css": {
+        "client/modules/email-combined-view/css/bundled.min.css": [
+            "client/modules/email-combined-view/css/general.css"
+        ]
+    }
+}

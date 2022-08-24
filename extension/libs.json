@@ -1,0 +1,6 @@
+{
+    "lib1": {
+        "cwd": "node_modules/lib1/dist/",
+        "src": "**"
+    }
+}

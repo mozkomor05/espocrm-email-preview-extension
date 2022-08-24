@@ -1,0 +1,29 @@
+{
+    "name": "email-combined-view",
+    "version": "0.0.1",
+    "description": "Quickly view e-mails in a compact combined view.",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://gitlab.apertia.cz/autocrm/modules/email-combined-view"
+    },
+    "author": "Apertia Tech s.r.o.",
+    "license": "GPL-3.0-or-later",
+    "devDependencies": {
+        "dotenv": "^16.0.1",
+        "form-data": "^4.0.0",
+        "grunt": "^1.5.3",
+        "grunt-contrib-clean": "^2.0.1",
+        "grunt-contrib-compress": "^2.0.0",
+        "grunt-contrib-copy": "^1.0.0",
+        "grunt-contrib-cssmin": "^4.0.0",
+        "grunt-contrib-jshint": "^3.2.0",
+        "grunt-contrib-less": "^3.0.0",
+        "grunt-contrib-uglify": "^5.2.1",
+        "grunt-mkdir": "^1.1.0",
+        "ssh2": "^1.10.0",
+        "axios": "^0.27.2"
+    }
+}
