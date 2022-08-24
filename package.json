@@ -7,7 +7,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://gitlab.apertia.cz/autocrm/modules/email-combined-view"
+        "url": "https://github.com/mozkomor05/espocrm-email-preview-extension"
     },
     "author": "Apertia Tech s.r.o.",
     "license": "GPL-3.0-or-later",

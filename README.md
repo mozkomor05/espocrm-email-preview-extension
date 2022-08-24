@@ -14,6 +14,8 @@ Quickly view e-mails in a compact combined view.
 
 Quickly view e-mails in a compact combined view.
 
+![Example screen shot](assets/example.png)
+
 ## Requires
 
 - EspoCRM >= 7.0
@@ -23,7 +25,7 @@ Quickly view e-mails in a compact combined view.
 
 ### Pre-build extension release
 
-1. Download the latest release from [Release page](https://gitlab.apertia.cz/autocrm/modules/email-combined-view/-/releases).
+1. Download the latest release from [Release page](https://github.com/mozkomor05/espocrm-email-preview-extension/releases/latest).
 2. Go to **Administration** -> **Extensions** and upload the downloaded file.
 
 ### Build from source

@@ -1,0 +1,12 @@
+{
+    "views": {
+        "list": "email-combined-view:views/email/list"
+    },
+    "recordViews": {
+        "combined": "email-combined-view:views/email/record/combined"
+    },
+    "listViewModeList": [
+        "list",
+        "combined"
+    ]
+}
