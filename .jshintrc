@@ -1,0 +1,20 @@
+{
+    "undef": false,
+    "unused": "vars",
+    "globals": {
+        "$": true,
+        "define": true,
+        "Espo": true,
+        "extend": true,
+        "document": true,
+        "_": true,
+        "require": true
+    },
+    "esversion": 6,
+    "curly": false,
+    "eqeqeq": true,
+    "futurehostile": true,
+    "latedef": "nofunc",
+    "leanswitch": true,
+    "noreturnawait": true
+}
