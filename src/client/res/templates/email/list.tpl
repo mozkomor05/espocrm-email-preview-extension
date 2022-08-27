@@ -6,11 +6,11 @@
     <div class="folders-container {{#if
             isCombinedMode}}col-md-1 col-sm-3{{else}}col-md-2 col-sm-3{{/if}}">{{{folders}}}</div>
     {{/unless}}
-    <div class="list-container{{#unless
-        foldersDisabled}} {{#if
-        isCombinedMode}}col-md-4 col-sm-9{{else}}col-md-10 col-sm-9{{/if}}{{else}} col-md-12{{/unless}}">{{{list}}}</div>
+    <div class="list-container {{#if
+        isCombinedMode}}col-sm-4{{else}}{{#unless
+        foldersDisabled}}col-md-10 col-sm-9{{else}}col-md-12{{/unless}}{{/if}}">{{{list}}}</div>
     {{#if isCombinedMode}}
     <div class="detail-container{{#unless
-            foldersDisabled}} col-md-7{{else}} col-md-12{{/unless}}">{{{combinedDetail}}}</div>
+            foldersDisabled}} col-sm-7{{else}} col-sm-8{{/unless}}">{{{combinedDetail}}}</div>
     {{/if}}
 </div>
