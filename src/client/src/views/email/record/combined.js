@@ -97,7 +97,7 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
                 return;
             }
 
-            const viewName = this.getMetadata().get(['clientDefs', 'Email', 'recordViews', 'detailCombined']) || 'autocrm:views/email/record/combined-detail';
+            const viewName = this.getMetadata().get(['clientDefs', 'Email', 'recordViews', 'detailCombined']) || 'email-combined-view:views/email/record/combined-detail';
             const options = {
                 model: model,
                 el: this.getParentView().getSelector() + ' .detail-container',
