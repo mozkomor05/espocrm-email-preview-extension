@@ -21,10 +21,7 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
                 const lastOpenId = this.lastOpenId;
                 this.lastOpenId = id;
 
-                if (lastOpenId) {
-                    if (lastOpenId === id) {
-                        return;
-                    }
+                if (lastOpenId !== id) {
                     this.uncheckRecord(lastOpenId, null, true);
                 }
 
@@ -48,7 +45,11 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
             Dep.prototype.afterRender.call(this);
 
             if (this.collection.length) {
-                this.switchTo(0);
+                if (this.collection.has(this.lastOpenId)) {
+                    this.switchToId(this.lastOpenId);
+                } else {
+                    this.switchTo(0);
+                }
             } else {
                 this.getParentView().clearView('combinedDetail');
             }
@@ -89,15 +90,21 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
         },
 
         actionQuickView: function (data) {
+            const parentView = this.getParentView();
             const model = this.collection.get(data.id);
-            const viewName = this.getMetadata().get(['clientDefs', 'Email', 'recordViews', 'detailCombined']) || 'email-combined-view:views/email/record/combined-detail';
+
+            if (parentView.hasView('combinedDetail') && parentView.getView('combinedDetail').model.id === data.id) {
+                return;
+            }
+
+            const viewName = this.getMetadata().get(['clientDefs', 'Email', 'recordViews', 'detailCombined']) || 'autocrm:views/email/record/combined-detail';
             const options = {
                 model: model,
                 el: this.getParentView().getSelector() + ' .detail-container',
             };
 
             this.notify('Loading...');
-            this.getParentView().createView('combinedDetail', viewName, options, view => {
+            parentView.createView('combinedDetail', viewName, options, view => {
                     model.fetch();
 
                     this.listenToOnce(view, 'after:render', () => {
@@ -127,7 +134,12 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
         switchTo: function (index) {
             const newIndex = Math.min(this.collection.length - 1, Math.max(0, index));
             const neighbourId = this.collection.at(newIndex).id;
-            this.$el.find('.list-row[data-id="' + neighbourId + '"] > .cell[data-name="combinedCell"]').trigger('click');
+
+            this.switchToId(neighbourId);
+        },
+
+        switchToId: function (id) {
+            this.$el.find('.list-row[data-id="' + id + '"] > .cell[data-name="combinedCell"]').trigger('click');
         }
     });
 });
