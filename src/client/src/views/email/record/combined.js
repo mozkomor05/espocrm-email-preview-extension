@@ -116,7 +116,7 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
                         this.trigger('after:save', model);
                     });
                 
-					this.listenTo(model, 'sync', () => {
+					this.listenTo(model, 'after:save', () => {
     					this.collection.fetch();
 					});
 
