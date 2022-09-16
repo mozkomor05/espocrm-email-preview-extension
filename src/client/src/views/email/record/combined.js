@@ -115,6 +115,10 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
                     this.listenToOnce(view, 'after:save', (model) => {
                         this.trigger('after:save', model);
                     });
+                
+					this.listenTo(model, 'after:save', () => {
+    					this.collection.fetch();
+					});
 
                     this.listenTo(view, 'switch-neighbor', data => {
                         this.switchNeighbor(model, data.direction);
