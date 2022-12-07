@@ -8,8 +8,11 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
                 "customLabel": ""
             }
         ],
+
         selectAttributes: null,
+
         rowActionsDisabled: true,
+
         lastOpenId: null,
 
         events: _.extend({
@@ -22,10 +25,14 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
                 this.lastOpenId = id;
 
                 if (lastOpenId !== id) {
-                    this.uncheckRecord(lastOpenId, null, true);
+                    const $target = $('.record-checkbox[data-id="' + lastOpenId + '"]');
+
+                    if ($target.length) {
+                        $target.closest('tr').removeClass('selected');
+                    }
                 }
 
-                this.checkRecord(id, null, true);
+                $(e.currentTarget).closest('tr').addClass('selected');
                 this.actionQuickView({id: id});
             }
         }, Dep.prototype.events),
@@ -70,14 +77,6 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
 
                 this.listLayout = originalListLayout;
             });
-        },
-
-        uncheckRecord: function (id, $target, isSilent) {
-            if (id === this.lastOpenId) {
-                return;
-            }
-
-            Dep.prototype.uncheckRecord.call(this, id, $target, isSilent);
         },
 
         removeRecordFromList: function (id) {

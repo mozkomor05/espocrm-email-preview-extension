@@ -1,0 +1,7 @@
+{
+    "css": {
+        "client/modules/email-combined-view/css/bundled.min.css": [
+            "client/modules/email-combined-view/css/combined-email.css"
+        ]
+    }
+}
