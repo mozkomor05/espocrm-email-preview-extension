@@ -1,0 +1,7 @@
+div[data-scope="Email"] .list-row:not(.selected) > .cell[data-name="combinedCell"] {
+    cursor: pointer;
+}
+
+div[data-scope="Email"] tr.selected > td {
+    background-color: var(--state-success-bg);
+}
