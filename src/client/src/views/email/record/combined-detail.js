@@ -1,7 +1,23 @@
 define('email-combined-view:views/email/record/combined-detail', ['views/email/record/detail-quick', 'views/email/detail'], function (Dep, Detail) {
     return Dep.extend({
+
         setup: function () {
             Dep.prototype.setup.call(this);
+
+            this.addButton({
+                name: 'forward',
+                label: 'Forward',
+                action: 'forward',
+            }, false);
+
+            this.addButton({
+                name: 'createTask',
+                label: 'Create Task',
+                action: 'createTask',
+                style: 'success',
+                acl: 'create',
+                aclScope: 'Task'
+            }, false);
 
             this.addButton({
                 name: 'reply',
@@ -11,6 +27,19 @@ define('email-combined-view:views/email/record/combined-detail', ['views/email/r
             }, false);
 
             this.addButton({
+                name: 'replyToAll',
+                label: 'Reply to All',
+                style: 'danger'
+            }, false);
+
+            /* removes the the default delete button that was in the dropdown */
+            this.removeButton('delete');
+            this.addButton({
+                name: 'delete',
+                label: 'Remove'
+            });
+
+            this.addButton({
                 name: 'fullForm',
                 label: 'Full Form',
             }, false);
@@ -18,13 +47,8 @@ define('email-combined-view:views/email/record/combined-detail', ['views/email/r
             this.addDropdownItem(false, true);
 
             this.addDropdownItem({
-                'label': 'Reply to All',
-                'name': 'replyToAll',
-            }, true);
-
-            this.addDropdownItem({
-                'label': 'Reply',
-                'name': 'reply',
+                label: 'Reply',
+                name: 'reply',
             }, true);
         },
 
@@ -36,6 +60,14 @@ define('email-combined-view:views/email/record/combined-detail', ['views/email/r
                 id: this.model.id,
             });
             this.getRouter().navigate('#Email/view/' + this.model.id, {trigger: false});
+        },
+
+        actionCreateTask: function () {
+            Detail.prototype.actionCreateTask.call(this);
+        },
+
+        actionForward: function () {
+            Detail.prototype.actionForward.call(this);
         },
 
         actionReply: function (data, e, cc) {
@@ -57,5 +89,6 @@ define('email-combined-view:views/email/record/combined-detail', ['views/email/r
                 direction: 1,
             });
         },
+
     });
 });
