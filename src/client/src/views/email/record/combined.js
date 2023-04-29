@@ -1,15 +1,11 @@
-define('email-combined-view:views/email/record/combined', ['views/email/record/list'], function (Dep) {
+define('email-combined-view:views/email/record/combined', ['views/email/record/list', 'email-combined-view:helpers/version'], function (Dep, VersionHelper) {
     return Dep.extend({
-        listLayout: [
-            {
-                "name": "combinedCell",
-                "view": "email-combined-view:views/email/record/combined-cell",
-                "notSortable": true,
-                "customLabel": ""
-            }
-        ],
 
-        selectAttributes: null,
+        listLayout: [{
+            name: 'combinedCell', view: 'email-combined-view:views/email/record/combined-cell', notSortable: true, customLabel: ''
+        }],
+
+        selectAttributes: ['takenStatus'],
 
         rowActionsDisabled: true,
 
@@ -17,6 +13,13 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
 
         events: _.extend({
             'click [data-name="combinedCell"]': function (e) {
+                /* Prevents this event from firing when clicking on hover actions */
+                const directTarget = $(e.target);
+                if ([directTarget, directTarget.parent()]
+                    .some($el => $el.hasClass('hover-actions'))) {
+                    return;
+                }
+
                 e.preventDefault();
                 const parent = $(e.currentTarget).parent();
                 const id = parent.attr('data-id');
@@ -40,6 +43,8 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
         setup: function () {
             Dep.prototype.setup.call(this);
 
+            this.versionHelper = new VersionHelper(this.getMetadata(), this.getConfig());
+
             delete this.events['click a.link'];
             this.lastOpenId = null;
 
@@ -52,6 +57,8 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
             Dep.prototype.afterRender.call(this);
 
             if (this.collection.length) {
+                this.loadHoverActions();
+                this.colorRows();
                 if (this.collection.has(this.lastOpenId)) {
                     this.switchToId(this.lastOpenId);
                 } else {
@@ -60,6 +67,29 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
             } else {
                 this.getParentView().clearView('combinedDetail');
             }
+        },
+
+        colorRows: function () {
+            this.collection.models.forEach(model => {
+                const status = model.get('takenStatus');
+                const style = this.getMetadata().get(['entityDefs', 'Email', 'fields', 'takenStatus', 'style', status]);
+
+                if (!_.isString(style)) {
+                    return;
+                }
+
+                const color = window
+                    .getComputedStyle(document.documentElement)
+                    .getPropertyValue(`--btn-${style}-bg`);
+
+                if (color) {
+                    this.colorRow(model.id, color);
+                }
+            });
+        },
+
+        colorRow: function (id, color) {
+            this.$el.find(`tr.list-row[data-id="${id}"]`).css('background-color', color + '99');
         },
 
         getSelectAttributeList: function (callback) {
@@ -84,6 +114,10 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
 
             Dep.prototype.removeRecordFromList.call(this, id);
 
+            if (this.lastOpenId !== id) {
+                return;
+            }
+
             this.lastOpenId = null;
             this.switchTo(index);
         },
@@ -98,34 +132,32 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
 
             const viewName = this.getMetadata().get(['clientDefs', 'Email', 'recordViews', 'detailCombined']) || 'email-combined-view:views/email/record/combined-detail';
             const options = {
-                model: model,
-                el: this.getParentView().getSelector() + ' .detail-container',
+                model: model, el: this.getParentView().getSelector() + ' .detail-container',
             };
 
             this.notify('Loading...');
             parentView.createView('combinedDetail', viewName, options, view => {
-                    model.fetch();
+                model.fetch();
 
-                    this.listenToOnce(view, 'after:render', () => {
-                        this.notify(false);
-                        setTimeout(() => model.set('isRead', true), 50);
-                    });
+                this.listenToOnce(view, 'after:render', () => {
+                    this.notify(false);
+                    setTimeout(() => model.set('isRead', true), 50);
+                });
 
-                    this.listenToOnce(view, 'after:save', (model) => {
-                        this.trigger('after:save', model);
-                    });
-                
-					this.listenTo(model, 'after:save', () => {
-    					this.collection.fetch();
-					});
+                this.listenToOnce(view, 'after:save', (model) => {
+                    this.trigger('after:save', model);
+                });
 
-                    this.listenTo(view, 'switch-neighbor', data => {
-                        this.switchNeighbor(model, data.direction);
-                    });
+                this.listenTo(model, 'after:save', () => {
+                    this.collection.fetch();
+                });
 
-                    view.render();
-                }
-            );
+                this.listenTo(view, 'switch-neighbor', data => {
+                    this.switchNeighbor(model, data.direction);
+                });
+
+                view.render();
+            });
         },
 
         switchNeighbor: function (model, direction = 1) {
@@ -143,6 +175,181 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
 
         switchToId: function (id) {
             this.$el.find('.list-row[data-id="' + id + '"] > .cell[data-name="combinedCell"]').trigger('click');
-        }
+        },
+
+        /**
+         * Loads the hover actions for every model in view's collection.
+         * Creates hover action elements and appends them to the combined cell element of each row.
+         * @returns {void}
+         * @throws {Error} If the row or combined cell element is not found.
+         *
+         * @see createHoverActions()
+         */
+        loadHoverActions: function () {
+            for (const model of this.collection.models) {
+                const $row = this.$el.find(`tr.list-row[data-id="${model.id}"]`);
+
+                if (!$row.length) {
+                    throw new Error('Row not found');
+                }
+
+                const $hoverActions = $('<td class="hover-actions"></td>');
+                const $container = $('<div class="container"></div>');
+
+                $container.append(...this.createHoverActions(model));
+                $hoverActions.append($container);
+                $row.append($hoverActions);
+            }
+        },
+
+        computeBackgroundColor: function ($el) {
+            if (!this._defaultBackground) {
+                this._defaultBackground = $('<div/>').css('background-color');
+            }
+
+            const backgroundColor = $el.css('background-color');
+
+            if (backgroundColor === this._defaultBackground) {
+                if (!$el.parent().length) {
+                    return backgroundColor;
+                }
+
+                return $el.parent().css('background-color');
+            }
+
+            return backgroundColor;
+        },
+
+        /** Class representing a hover action. */
+        HoverAction: class {
+            /**
+             * Creates a new instance of HoverAction.
+             *
+             * Creates the jquery element, applies default active value,
+             * creates event listener that will execute the provided action.
+             *
+             * @param {string} className element's custom css class name
+             * @param {string} faIcon element's font awesome icon class name
+             * @param {boolean} active whether the hover action is active or not at the start
+             * @param {() => boolean} action the action to be executed on click, should return true or false
+             * whether the hover action state should be active or not after the action is executed
+             */
+            constructor(className, faIcon, active, action) {
+                this.className = className;
+                this.faIcon = faIcon;
+                this.active = active;
+                this.action = action;
+
+                this.$el = this.createElement();
+                this.setActive(active);
+                this.event();
+            }
+
+            /**
+             * Returns the element of this hover action.
+             *
+             * @returns {jQuery|*} jquery element
+             * @throws {Error} if the element is not created yet
+             */
+            element() {
+                if (!this.$el) throw new Error('Element used before creation');
+                return this.$el;
+            }
+
+            /**
+             * Creates "onclick" event listener for this hover action element,
+             * which will execute the provided action and set the
+             * hover action to active or inactive based on the result.
+             */
+            event() {
+                this.element().on('click', () => {
+                    this.setActive(this.action());
+                });
+            }
+
+            /**
+             * Sets the hover action state to active or inactive.
+             * And then adds or removes the "active" class to the element, respectively.
+             *
+             * @param {boolean} active
+             */
+            setActive(active) {
+                this.element().toggleClass('active', active);
+            }
+
+            /**
+             * Creates and returns the jquery element for this hover action.
+             * @returns {jQuery|*}
+             */
+            createElement() {
+                return $(`<i class="fas ${this.faIcon} ${this.className}"></i>`);
+            }
+        },
+
+        /**
+         * Creates hover actions for a model
+         * @param model to which model the hover actions should be applied
+         * @returns {jQuery[]|*[]} array of jquery elements corresponding to the created hover actions
+         *
+         * @see HoverAction
+         */
+        createHoverActions: function (model) {
+            return [
+                new this.HoverAction('trash', 'fa-trash', model.get('inTrash'), () => {
+                    const inTrash = model.get('inTrash');
+
+                    if (inTrash) {
+                        this.actionRetrieveFromTrash({id: model.id});
+                    } else {
+                        this.actionMoveToTrash({id: model.id});
+                    }
+
+                    return !inTrash;
+                }), new this.HoverAction('read', 'fa-check', model.get('isRead'), () => {
+                    const isRead = model.get('isRead');
+
+                    this.actionMarkAsRead(model.id, !isRead);
+
+                    return !isRead;
+                }), new this.HoverAction('important', 'fa-star', model.get('isImportant'), () => {
+                    const isImportant = model.get('isImportant');
+
+                    if (isImportant) this.actionMarkAsNotImportant({id: model.id}); else this.actionMarkAsImportant({id: model.id});
+
+                    return !isImportant;
+                }),
+            ].map(hoverAction => hoverAction.element());
+        },
+
+        /**
+         * Mark an email as read or unread
+         *
+         * (EspoCRM does not have a built-in method to mark
+         * a single email message as read/unread, so we have
+         * to create our own.)
+         *
+         * @param {string} id The id of the email
+         * @param {boolean} read Set the email as read or unread
+         * @returns {void}
+         */
+        actionMarkAsRead: function (id, read) {
+            let promise;
+
+            if (this.versionHelper.isLess('7.4.0')) {
+                promise = Espo.Ajax.postRequest(`Email/action/markAs${(read) ? '' : 'Not'}Read`, {ids: [id]});
+            } else {
+                if (read) {
+                    promise = Espo.Ajax.postRequest(`Email/inbox/read`, {ids: [id]});
+                } else {
+                    promise = Espo.Ajax.deleteRequest(`Email/inbox/read`, {ids: [id]});
+                }
+            }
+
+            const model = this.collection.get(id);
+
+            if (model) {
+                promise.then(() => model.set('isRead', read));
+            }
+        },
     });
 });

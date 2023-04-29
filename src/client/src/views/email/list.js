@@ -1,7 +1,10 @@
 define('email-combined-view:views/email/list', ['views/email/list'], function (Dep) {
     return Dep.extend({
-        searchView: 'email-combined-view:views/email/record/search',
+
         template: 'email-combined-view:email/list',
+
+        searchView: 'email-combined-view:views/email/record/search',
+
         skipBuildRows: true,
 
         data: function () {
@@ -9,6 +12,15 @@ define('email-combined-view:views/email/list', ['views/email/list'], function (D
             data.isCombinedMode = this.viewMode === 'combined';
 
             return data;
+        },
+
+        afterRender: function () {
+            Dep.prototype.afterRender.call(this);
+
+            // Backwards compatibility
+            if ('initStickableFolders' in this) {
+                this.initStickableFolders();
+            }
         },
 
         switchViewMode: function (mode) {
@@ -22,6 +34,7 @@ define('email-combined-view:views/email/list', ['views/email/list'], function (D
 
         prepareRecordViewOptions: function (o) {
             o.skipBuildRows = this.skipBuildRows;
-        },
+        }
+
     });
 });
