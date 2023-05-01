@@ -14,9 +14,9 @@ define('email-combined-view:views/email/record/combined-detail', ['views/email/r
                 name: 'createTask',
                 label: 'Create Task',
                 action: 'createTask',
-                style: 'success',
                 acl: 'create',
-                aclScope: 'Task'
+                aclScope: 'Task',
+                style: 'success'
             }, false);
 
             this.addButton({
@@ -26,13 +26,7 @@ define('email-combined-view:views/email/record/combined-detail', ['views/email/r
                 style: 'danger'
             }, false);
 
-            this.addButton({
-                name: 'replyToAll',
-                label: 'Reply to All',
-                style: 'danger'
-            }, false);
-
-            /* removes the the default delete button that was in the dropdown */
+            /* removes the default delete button that was in the dropdown */
             this.removeButton('delete');
             this.addButton({
                 name: 'delete',
@@ -47,9 +41,50 @@ define('email-combined-view:views/email/record/combined-detail', ['views/email/r
             this.addDropdownItem(false, true);
 
             this.addDropdownItem({
+                label: 'Reply to All',
+                name: 'replyToAll',
+            }, true);
+
+            this.addDropdownItem({
                 label: 'Reply',
                 name: 'reply',
             }, true);
+
+            this.addDropdownItem(false);
+
+            if (this.model.get('status') === 'Archived') {
+                if (!this.model.get('parentId')) {
+                    this.addDropdownItem({
+                        label: 'Create Lead',
+                        name: 'createLead',
+                        acl: 'create',
+                        aclScope: 'Lead'
+                    });
+
+                    this.addDropdownItem({
+                        label: 'Create Contact',
+                        name: 'createContact',
+                        acl: 'create',
+                        aclScope: 'Contact'
+                    });
+                }
+            }
+
+            this.addDropdownItem({
+                label: 'Create Task',
+                name: 'createTask',
+                acl: 'create',
+                aclScope: 'Task'
+            });
+
+            if (this.model.get('parentType') !== 'Case' || !this.model.get('parentId')) {
+                this.addDropdownItem({
+                    label: 'Create Case',
+                    name: 'createCase',
+                    acl: 'create',
+                    aclScope: 'Case'
+                });
+            }
         },
 
         actionFullForm: function () {
