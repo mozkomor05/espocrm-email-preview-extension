@@ -97,8 +97,20 @@ define('email-combined-view:views/email/record/combined-detail', ['views/email/r
             this.getRouter().navigate('#Email/view/' + this.model.id, {trigger: false});
         },
 
+        actionCreateLead: function () {
+            Detail.prototype.actionCreateLead.call(this);
+        },
+
+        actionCreateContact: function () {
+            Detail.prototype.actionCreateContact.call(this);
+        },
+
         actionCreateTask: function () {
             Detail.prototype.actionCreateTask.call(this);
+        },
+
+        actionCreateCase: function () {
+            Detail.prototype.actionCreateCase.call(this);
         },
 
         actionForward: function () {
@@ -111,18 +123,6 @@ define('email-combined-view:views/email/record/combined-detail', ['views/email/r
 
         actionReplyToAll: function (data, e) {
             Detail.prototype.actionReplyToAll.call(this, data, e);
-        },
-
-        actionPrevious: function () {
-            this.trigger('switch-neighbor', {
-                direction: -1,
-            });
-        },
-
-        actionNext: function () {
-            this.trigger('switch-neighbor', {
-                direction: 1,
-            });
         },
 
     });
