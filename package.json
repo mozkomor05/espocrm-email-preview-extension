@@ -1,6 +1,6 @@
 {
     "name": "email-combined-view",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "description": "Quickly view e-mails in a compact combined view.",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
