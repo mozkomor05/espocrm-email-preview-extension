@@ -42,10 +42,6 @@
     width: 100%;
 }
 
-.email-combined.is-combined .detail-container {
-    overflow-y: auto;
-}
-
 .email-combined.is-combined .detail-container .panel > .panel-body {
     max-height: calc(100vh - 200px);
     overflow-y: auto;
