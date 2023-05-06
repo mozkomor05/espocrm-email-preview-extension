@@ -125,5 +125,17 @@ define('email-combined-view:views/email/record/combined-detail', ['views/email/r
             Detail.prototype.actionReplyToAll.call(this, data, e);
         },
 
+        actionPrevious: function () {
+            this.trigger('switch-neighbor', {
+                direction: -1,
+            });
+        },
+
+        actionNext: function () {
+            this.trigger('switch-neighbor', {
+                direction: 1,
+            });
+        },
+
     });
 });
