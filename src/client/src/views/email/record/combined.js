@@ -156,6 +156,10 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
                     this.switchNeighbor(model, data.direction);
                 });
 
+                this.listenTo(view, 'delete', () => {
+                    this.removeRecordFromList(model.id);
+                });
+
                 view.render();
             });
         },

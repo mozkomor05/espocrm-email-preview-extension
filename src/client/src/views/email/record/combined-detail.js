@@ -4,6 +4,10 @@ define('email-combined-view:views/email/record/combined-detail', ['views/email/r
         setup: function () {
             Dep.prototype.setup.call(this);
 
+            this.setupButtons();
+        },
+
+        setupButtons: function() {
             this.addButton({
                 name: 'forward',
                 label: 'Forward',
@@ -25,13 +29,6 @@ define('email-combined-view:views/email/record/combined-detail', ['views/email/r
                 action: this.getPreferences().get('emailReplyToAllByDefault') ? 'replyToAll' : 'reply',
                 style: 'danger'
             }, false);
-
-            /* removes the default delete button that was in the dropdown */
-            this.removeButton('delete');
-            this.addButton({
-                name: 'delete',
-                label: 'Remove'
-            });
 
             this.addButton({
                 name: 'fullForm',
@@ -86,6 +83,8 @@ define('email-combined-view:views/email/record/combined-detail', ['views/email/r
                 });
             }
         },
+
+        exitAfterDelete: () => true, // prevent folder change on delete
 
         actionFullForm: function () {
             this.getRouter().dispatch('Email', 'view', {
