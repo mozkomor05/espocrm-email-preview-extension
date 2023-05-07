@@ -24,9 +24,8 @@ define('email-combined-view:views/email/record/combined-detail', ['views/email/r
             }, false);
 
             this.addButton({
-                name: 'reply',
+                name: this.getPreferences().get('emailReplyToAllByDefault') ? 'replyToAll' : 'reply',
                 label: 'Reply',
-                action: this.getPreferences().get('emailReplyToAllByDefault') ? 'replyToAll' : 'reply',
                 style: 'danger'
             }, false);
 
