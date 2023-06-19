@@ -2,12 +2,22 @@ define('email-combined-view:views/email/record/combined-detail', ['views/record/
     return Dep.extend({
 
         setup: function () {
+            this.events['click .field[data-name="replies"] a, .field[data-name="replied"] a'] = e => {
+                e.preventDefault();
+
+                const target = $(e.currentTarget);
+
+                const id = target.attr('data-id') || target.attr('href').split('/').pop();
+
+                this.trigger('clicked-reply', id);
+            };
+
             Dep.prototype.setup.call(this);
 
             this.setupButtons();
         },
 
-        setupButtons: function() {
+        setupButtons: function () {
             this.addButton({
                 name: 'forward',
                 label: 'Forward',

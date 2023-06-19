@@ -81,10 +81,14 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
                 return;
             }
 
-            if (this.collection.has(emailId)) {
-                this.switchToId(emailId);
+            this.switchOrLoad(emailId);
+        },
+
+        switchOrLoad: function (id) {
+            if (this.collection.has(id)) {
+                this.switchToId(id);
             } else {
-                this.actionQuickView({id: emailId});
+                this.actionQuickView({id: id});
             }
         },
 
@@ -199,6 +203,10 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
 
                     this.listenTo(view, 'delete', () => {
                         this.removeRecordFromList(model.id);
+                    });
+
+                    this.listenTo(view, 'clicked-reply', id => {
+                        this.switchOrLoad(id);
                     });
 
                     this.trigger('select', model);
