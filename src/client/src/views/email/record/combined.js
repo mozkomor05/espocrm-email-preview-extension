@@ -2,7 +2,10 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
     return Dep.extend({
 
         listLayout: [{
-            name: 'combinedCell', view: 'email-combined-view:views/email/record/combined-cell', notSortable: true, customLabel: ''
+            name: 'combinedCell',
+            view: 'email-combined-view:views/email/record/combined-cell',
+            notSortable: true,
+            customLabel: ''
         }],
 
         selectAttributes: ['takenStatus'],
@@ -11,10 +14,29 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
 
         lastOpenId: null,
 
-        events: _.extend({
-            'click [data-name="combinedCell"]': function (e) {
+        /**
+         * @type {module:email-combined-view:helpers/version.Class}
+         */
+        versionHelper: null,
+
+        setup: function () {
+            this.setupEvents();
+
+            Dep.prototype.setup.call(this);
+
+            this.versionHelper = new VersionHelper(this.getMetadata(), this.getConfig());
+
+            delete this.events['click a.link'];
+            this.lastOpenId = null;
+
+            this.on('remove', () => this.getParentView().clearView('combinedDetail'));
+        },
+
+        setupEvents: function () {
+            this.events['click [data-name="combinedCell"]'] = e => {
                 /* Prevents this event from firing when clicking on hover actions */
                 const directTarget = $(e.target);
+
                 if ([directTarget, directTarget.parent()]
                     .some($el => $el.hasClass('hover-actions'))) {
                     return;
@@ -36,36 +58,33 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
                 }
 
                 $(e.currentTarget).closest('tr').addClass('selected');
+
                 this.actionQuickView({id: id});
-            }
-        }, Dep.prototype.events),
-
-        setup: function () {
-            Dep.prototype.setup.call(this);
-
-            this.versionHelper = new VersionHelper(this.getMetadata(), this.getConfig());
-
-            delete this.events['click a.link'];
-            this.lastOpenId = null;
-
-            this.on('remove', () => {
-                this.getParentView().clearView('combinedDetail');
-            });
+            };
         },
 
         afterRender: function () {
             Dep.prototype.afterRender.call(this);
 
-            if (this.collection.length) {
-                this.loadHoverActions();
-                this.colorRows();
-                if (this.collection.has(this.lastOpenId)) {
-                    this.switchToId(this.lastOpenId);
-                } else {
-                    this.switchTo(0);
-                }
-            } else {
+            if (!this.collection.length) {
                 this.getParentView().clearView('combinedDetail');
+                return;
+            }
+
+            this.loadHoverActions();
+            this.colorRows();
+
+            const emailId = this.lastOpenId || this.collection.selectedEmailId;
+
+            if (!emailId) {
+                this.switchTo(0);
+                return;
+            }
+
+            if (this.collection.has(emailId)) {
+                this.switchToId(emailId);
+            } else {
+                this.actionQuickView({id: emailId});
             }
         },
 
@@ -122,45 +141,70 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
             this.switchTo(index);
         },
 
-        actionQuickView: function (data) {
-            const parentView = this.getParentView();
-            const model = this.collection.get(data.id);
-
-            if (parentView.hasView('combinedDetail') && parentView.getView('combinedDetail').model.id === data.id) {
-                return;
+        /**
+         * Tries to fetch the model, if it's not in the collection
+         *
+         * @return {Promise<module:model.Class>}
+         * */
+        getModel: function (id) {
+            if (this.collection.has(id)) {
+                return new Promise(resolve => resolve(this.collection.get(id)));
             }
 
-            const viewName = this.getMetadata().get(['clientDefs', 'Email', 'recordViews', 'detailCombined']) || 'email-combined-view:views/email/record/combined-detail';
-            const options = {
-                model: model, el: this.getParentView().getSelector() + ' .detail-container',
-            };
+            return new Promise(resolve => {
+                this.getModelFactory()
+                    .create('Email', model => model.id = id)
+                    .then(model => model.fetch().then(
+                        () => resolve(model)
+                    ));
+            });
+        },
 
-            this.notify('Loading...');
-            parentView.createView('combinedDetail', viewName, options, view => {
-                model.fetch();
+        actionQuickView: function (data) {
+            const parentView = this.getParentView();
 
-                this.listenToOnce(view, 'after:render', () => {
-                    this.notify(false);
-                    setTimeout(() => model.set('isRead', true), 50);
+            this.getModel(data.id).then(model => {
+                if (parentView.hasView('combinedDetail') && parentView.getView('combinedDetail').model.id === data.id) {
+                    return;
+                }
+
+                const viewName = this.getMetadata().get(['clientDefs', 'Email', 'recordViews', 'detailCombined']) || 'email-combined-view:views/email/record/combined-detail';
+
+                const options = {
+                    model: model,
+                    el: this.getParentView().getSelector() + ' .detail-container',
+                };
+
+                this.notify('Loading...');
+
+                parentView.createView('combinedDetail', viewName, options, view => {
+                    model.fetch();
+
+                    this.listenToOnce(view, 'after:render', () => {
+                        this.notify(false);
+                        setTimeout(() => model.set('isRead', true), 50);
+                    });
+
+                    this.listenToOnce(view, 'after:save', model =>
+                        this.trigger('after:save', model)
+                    );
+
+                    this.listenTo(model, 'after:save', () =>
+                        this.collection.fetch()
+                    );
+
+                    this.listenTo(view, 'switch-neighbor', data =>
+                        this.switchNeighbor(model, data.direction)
+                    );
+
+                    this.listenTo(view, 'delete', () => {
+                        this.removeRecordFromList(model.id);
+                    });
+
+                    this.trigger('select', model);
+
+                    view.render();
                 });
-
-                this.listenToOnce(view, 'after:save', (model) => {
-                    this.trigger('after:save', model);
-                });
-
-                this.listenTo(model, 'after:save', () => {
-                    this.collection.fetch();
-                });
-
-                this.listenTo(view, 'switch-neighbor', data => {
-                    this.switchNeighbor(model, data.direction);
-                });
-
-                this.listenTo(view, 'delete', () => {
-                    this.removeRecordFromList(model.id);
-                });
-
-                view.render();
             });
         },
 
@@ -354,6 +398,7 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
             if (model) {
                 promise.then(() => model.set('isRead', read));
             }
-        },
+        }
+
     });
 });
