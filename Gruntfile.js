@@ -278,50 +278,10 @@ module.exports = grunt => {
                 host: process.env.SSH_HOST,
                 port: process.env.SSH_PORT,
                 username: process.env.SSH_USER,
-                password: process.env.SSH_PASSWORD,
+                password: process.env.SSH_PASS,
             });
         }
     );
-
-
-    grunt.registerTask('apertia:deploy', function () {
-        const axios = require('axios');
-        require('dotenv').config();
-
-        const done = this.async();
-
-        if (!pkg.repository || !pkg.repository.url) {
-            grunt.log.error('Repository URL is not set.');
-            done(false);
-        }
-
-        const host = process.env.ESPO_API_URL;
-        const url = `${host}/api/v1/Autocrm/action/deployExtension`;
-
-        const headers = {
-            'Content-Type': 'application/json',
-            "X-Api-Key": `${process.env.ESPO_API_TOKEN}`,
-        };
-
-        const data = {
-            extensionFile: fs.readFileSync(`dist/${releaseName}.zip`, {encoding: 'base64'}),
-            name: moduleNameHyphen,
-            version: pkg.version,
-            repository: pkg.repository.url,
-        };
-
-        grunt.log.subhead('Deploying extension...');
-        axios.post(url, data, {headers: headers}).then(response => {
-            grunt.log.ok(response.data);
-            done();
-        }).catch(error => {
-            grunt.log.error(error);
-            done();
-        }).finally(() => {
-            grunt.log.ok('Deployment finished.');
-            done();
-        });
-    });
 
     grunt.registerTask('npm-install', () => {
         cp.execSync("npm ci", {stdio: 'ignore'});

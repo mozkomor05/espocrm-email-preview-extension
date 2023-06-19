@@ -1,76 +1,81 @@
-.email-combined div[data-scope="Email"] .list-row > .cell[data-name="combinedCell"] {
+.email-list-container .list-row > .cell[data-name="combinedCell"] {
     cursor: pointer;
 }
 
-.email-combined div[data-scope="Email"] .list-row > .cell[data-name="combinedCell"] .subject-container {
+.email-list-container .list-row > .cell[data-name="combinedCell"] .subject-container {
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.email-combined div[data-scope="Email"] tr.selected > td {
+.email-list-container .list {
+    margin-right: 0 !important;
+}
+
+.email-list-container tr.selected > td {
     background-color: var(--state-success-bg);
 }
 
-.email-combined.is-combined .list-container table {
+.email-combined.is-combined .email-list-container table {
     max-height: calc(100vh - 230px);
     display: flex;
     width: 100%;
     flex-direction: column;
 }
 
-.email-combined.is-combined .list-container table thead {
+.email-combined.is-combined .email-list-container table thead {
     flex: 0 0 auto;
 }
 
-.email-combined.is-combined .list-container table tbody {
+.email-combined.is-combined .email-list-container table tbody {
     flex: 1 1 auto;
     display: block;
     overflow-y: auto;
 }
 
-.email-combined.is-combined .list-container table tbody td[data-name="r-checkbox"] {
+.email-combined.is-combined .email-list-container table tbody td[data-name="r-checkbox"] {
     width: 40px;
 }
 
-.email-combined.is-combined .list-container table tbody::-webkit-scrollbar {
+.email-combined.is-combined .email-list-container table tbody::-webkit-scrollbar {
     width: 8px;
 }
 
-.email-combined.is-combined .list-container table thead, .email-combined.is-combined .list-container table tbody tr {
+.email-combined.is-combined .email-list-container table thead,
+.email-combined.is-combined .email-list-container table tbody tr {
     display: table;
     table-layout: fixed;
     width: 100%;
 }
 
-.email-combined.is-combined .detail-container .panel > .panel-body {
-    max-height: calc(100vh - 200px);
+.email-combined.is-combined .detail-container .field[data-name="body"] {
+    max-height: 600px;
     overflow-y: auto;
 }
 
-.email-combined.is-combined .detail-container .panel > .panel-body::-webkit-scrollbar {
+.email-combined.is-combined .detail-container .field[data-name="body"]::-webkit-scrollbar {
     width: 8px;
 }
 
-.email-combined div[data-scope="Email"] .list-row .top > div {
+.email-list-container .list-row .top > div {
     display: inline-block;
 }
 
-.email-combined div[data-scope="Email"] .list-row .date-container {
+.email-list-container .list-row .date-container {
     float: right;
 }
 
 /* show the hover actions only to devices that support hover */
 @media (hover: hover) {
-    .email-combined div[data-scope="Email"] .list-row:hover .date-container {
+    .email-list-container .list-row:hover .date-container {
         display: none;
     }
 
-    .email-combined div[data-scope="Email"] .list-row:hover .hover-actions {
+    .email-list-container .list-row:hover .hover-actions {
         display: table-cell;
     }
 }
 
-.email-combined div[data-scope="Email"] .list-row .hover-actions {
+.email-list-container .list-row .hover-actions {
     display: none; /* hide by default */
     cursor: default; /* overriding pointer from hovering over other rows */
     padding: 0 !important;
@@ -79,7 +84,7 @@
     width: 100px;
 }
 
-.email-combined div[data-scope="Email"] .list-row .hover-actions .container {
+.email-list-container .list-row .hover-actions .container {
     display: flex;
     height: 100%;
     flex-direction: row;
@@ -87,24 +92,29 @@
     justify-content: center;
 }
 
-.email-combined div[data-scope="Email"] .list-row .hover-actions i {
+.email-list-container .list-row .hover-actions i {
     padding: 0.4em;
     cursor: pointer;
     border-radius: 50%;
 }
 
-.email-combined div[data-scope="Email"] .list-row .hover-actions i:hover {
+.email-list-container .list-row .hover-actions i:hover {
     background-color: var(--table-bg);
 }
 
-.email-combined div[data-scope="Email"] .list-row .hover-actions .read.active {
+.email-list-container .list-row .hover-actions .read.active {
     color: yellowgreen;
 }
 
-.email-combined div[data-scope="Email"] .list-row .hover-actions .important.active {
+.email-list-container .list-row .hover-actions .important.active {
     color: orange;
 }
 
-.email-combined div[data-scope="Email"] .list-row .hover-actions .trash.active {
+.email-list-container .list-row .hover-actions .trash.active {
     color: crimson;
+}
+
+.email-list-container.sticked {
+    position: fixed;
+    top: 75px;
 }
