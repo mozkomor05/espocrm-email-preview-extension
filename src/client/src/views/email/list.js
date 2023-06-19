@@ -203,7 +203,7 @@ define('email-combined-view:views/email/list', ['views/email/list'], function (D
         applyRoutingParams: function (params) {
             Dep.prototype.applyRoutingParams.call(this, params);
 
-            if (email in params) {
+            if ('email' in params) {
                 this.getRecordView().lastOpenId = params.email;
             }
         },
