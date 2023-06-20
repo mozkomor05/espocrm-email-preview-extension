@@ -33,7 +33,7 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
         },
 
         setupEvents: function () {
-            this.events['click [data-name="combinedCell"]'] = e => {
+            this.events['click td.cell[data-name="combinedCell"]'] = e => {
                 /* Prevents this event from firing when clicking on hover actions */
                 const directTarget = $(e.target);
 
@@ -45,6 +45,10 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
                 e.preventDefault();
                 const parent = $(e.currentTarget).parent();
                 const id = parent.attr('data-id');
+
+                if (!id) {
+                    return;
+                }
 
                 const lastOpenId = this.lastOpenId;
                 this.lastOpenId = id;
