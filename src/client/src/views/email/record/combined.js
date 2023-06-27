@@ -26,7 +26,6 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
 
             this.versionHelper = new VersionHelper(this.getMetadata(), this.getConfig());
 
-            delete this.events['click a.link'];
             this.lastOpenId = null;
 
             this.on('remove', () => this.getParentView().clearView('combinedDetail'));
@@ -65,6 +64,8 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
 
                 this.actionQuickView({id: id});
             };
+
+            delete this.events['click a.link'];
         },
 
         afterRender: function () {
@@ -190,7 +191,6 @@ define('email-combined-view:views/email/record/combined', ['views/email/record/l
 
                     this.listenToOnce(view, 'after:render', () => {
                         this.notify(false);
-                        setTimeout(() => model.set('isRead', true), 50);
                     });
 
                     this.listenToOnce(view, 'after:save', model =>

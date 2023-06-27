@@ -14,6 +14,12 @@ define('email-combined-view:views/email/record/combined-detail', ['views/record/
 
             Dep.prototype.setup.call(this);
 
+            this.listenToOnce(this.model, 'sync', () => {
+                setTimeout(() => {
+                    this.model.set('isRead', true);
+                }, 50);
+            });
+
             this.setupButtons();
         },
 
