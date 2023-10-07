@@ -1,4 +1,4 @@
-define('email-combined-view:views/email/record/combined-detail', ['views/record/detail-small', 'views/email/detail'], function (Dep, Detail) {
+define(['views/record/detail-small', 'views/email/detail'], (Dep, Detail) => {
     return Dep.extend({
 
         setup: function () {

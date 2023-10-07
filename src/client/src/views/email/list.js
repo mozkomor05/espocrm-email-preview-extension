@@ -1,4 +1,4 @@
-define('email-combined-view:views/email/list', ['views/email/list'], function (Dep) {
+define(['views/email/list'], Dep => {
     return Dep.extend({
 
         template: 'email-combined-view:email/list',
@@ -132,7 +132,11 @@ define('email-combined-view:views/email/list', ['views/email/list'], function (D
 
         prepareRecordViewOptions: function (o) {
             o.skipBuildRows = this.skipBuildRows;
-            o.el += ' .email-list-container';
+
+            // 7.5 compatibility
+            const selectorKey = 'selector' in o ? 'selector' : 'el';
+
+            o[selectorKey] += ' .email-list-container';
         },
 
         createListRecordView: function (fetch) {
