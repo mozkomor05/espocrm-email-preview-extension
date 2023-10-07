@@ -9,7 +9,7 @@ define(['views/email/list'], Dep => {
 
         selectedEmailId: null,
 
-        skipBuildRows: true,
+        _dontSkipNextBuildRows: false,
 
         setup: function () {
             Dep.prototype.setup.call(this);
@@ -18,29 +18,33 @@ define(['views/email/list'], Dep => {
 
             this.applyEmail();
 
+            this.on('after:render', () => this.reinitStickables());
             this.on('remove', () => this.removeStickableEmails());
+        },
+
+        reinitStickables: function () {
+            this.removeStickableEmails();
+
+            $(window).off('resize.email-folders');
+            $(window).off('scroll.email-folders');
+
+            this.initStickableEmails();
+
+            // BC
+            if ('initStickableFolders' in this) {
+                this.initStickableFolders();
+            }
         },
 
         data: function () {
             const data = Dep.prototype.data.call(this);
-            data.isCombinedMode = this.viewMode === this.MODE_COMBINED;
+            data.isCombinedMode = this.isCombinedMode();
 
             return data;
         },
 
-        afterRender: function () {
-            Dep.prototype.afterRender.call(this);
-
-            // Backwards compatibility
-            if ('initStickableFolders' in this) {
-                this.initStickableFolders();
-            }
-
-            if (this.viewMode === this.MODE_COMBINED) {
-                this.initStickableEmails();
-            } else {
-                this.removeStickableEmails();
-            }
+        isCombinedMode: function () {
+            return this.viewMode === this.MODE_COMBINED;
         },
 
         initStickableEmails: function () {
@@ -54,7 +58,7 @@ define(['views/email/list'], Dep => {
 
             const bottomSpaceHeight = parseInt(window.getComputedStyle($('#content').get(0)).paddingBottom, 10);
 
-            const getOffsetTop = (/** JQuery */$element) => {
+            const getOffsetTop = (/** JQuery */ $element) => {
                 let element = $element.get(0);
 
                 let value = 0;
@@ -72,6 +76,7 @@ define(['views/email/list'], Dep => {
                 return value - offset;
             };
 
+            // this.stickableTop computation has to be exactly same as the computation in initStickableFolders
             this.stickableTop = getOffsetTop($list);
 
             const control = () => {
@@ -83,11 +88,12 @@ define(['views/email/list'], Dep => {
 
                 let scrollTop = $window.scrollTop();
 
-                if (scrollTop <= start || isSmallScreen) {
-                    $container
-                        .removeClass('sticked')
-                        .width('')
-                        .scrollTop(0);
+                if (
+                    !this.isCombinedMode() ||
+                    scrollTop <= start ||
+                    isSmallScreen
+                ) {
+                    $container.removeClass('sticked').width('').scrollTop(0);
 
                     $container.css({
                         maxHeight: '',
@@ -106,32 +112,37 @@ define(['views/email/list'], Dep => {
 
                     let topStickPosition = parseInt(window.getComputedStyle($container.get(0)).top);
 
-                    let maxHeight = $window.height() - topStickPosition - bottomSpaceHeight;
+                    let maxHeight =
+                        $window.height() - topStickPosition - bottomSpaceHeight;
 
                     $container.css({maxHeight: maxHeight});
                 }
             };
 
-            $window.on('resize.combined-view-list', () => control());
-            $window.on('scroll.combined-view-list', () => control());
+            $window.on('resize.stickable-emails', () => control());
+            $window.on('scroll.stickable-emails', () => control());
         },
 
         removeStickableEmails: function () {
-            $(window).off('resize.combined-view-list');
-            $(window).off('scroll.combined-view-list');
+            $(window).off('resize.stickable-emails');
+            $(window).off('scroll.stickable-emails');
         },
 
         switchViewMode: function (mode) {
-            this.clearView('list');
             this.setViewMode(mode, true);
 
-            this.skipBuildRows = false;
-            this.reRender();
-            this.skipBuildRows = true;
+            // build already fetched rows
+            this._dontSkipNextBuildRows = true;
+
+            // template changes, so we need to re-render
+            this.reRender().then(() => this.loadList());
         },
 
         prepareRecordViewOptions: function (o) {
-            o.skipBuildRows = this.skipBuildRows;
+            if (this._dontSkipNextBuildRows) {
+                o.skipBuildRows = false;
+                this._skipNextBuildRows = false;
+            }
 
             // 7.5 compatibility
             const selectorKey = 'selector' in o ? 'selector' : 'el';
@@ -140,7 +151,8 @@ define(['views/email/list'], Dep => {
         },
 
         createListRecordView: function (fetch) {
-            return Dep.prototype.createListRecordView.call(this, fetch)
+            return Dep.prototype.createListRecordView
+                .call(this, fetch)
                 .then(view => {
                     view = this.getRecordView();
 
@@ -164,40 +176,47 @@ define(['views/email/list'], Dep => {
         },
 
         createView: function (key, viewName, options, callback, wait) {
-            return Dep.prototype.createView.call(this, key, viewName, options, view => {
-                if (typeof callback === 'function') {
-                    callback(view);
-                }
+            return Dep.prototype.createView.call(
+                this,
+                key,
+                viewName,
+                options,
+                view => {
+                    if (typeof callback === 'function') {
+                        callback(view);
+                    }
 
-                if (key === 'folders') {
-                    this.stopListening(view, 'select');
+                    if (key === 'folders') {
+                        this.stopListening(view, 'select');
 
-                    let xhr = null;
+                        let xhr = null;
 
-                    this.listenTo(view, 'select', folderId => {
-                        this.selectedFolderId = folderId;
-                        this.applyFolder();
+                        this.listenTo(view, 'select', folderId => {
+                            this.selectedFolderId = folderId;
+                            this.applyFolder();
 
-                        if (xhr && xhr.readyState < 4) {
-                            xhr.abort();
-                        }
+                            if (xhr && xhr.readyState < 4) {
+                                xhr.abort();
+                            }
 
-                        Espo.Ui.notify(' ... ');
+                            Espo.Ui.notify(' ... ');
 
-                        xhr = this.collection
-                            .fetch()
-                            .then(() => Espo.Ui.notify(false));
+                            xhr = this.collection
+                                .fetch()
+                                .then(() => Espo.Ui.notify(false));
 
-                        const params = {
-                            folder: this.getSelectedFolderId(),
-                            email: this.selectedEmailId,
-                        };
+                            const params = {
+                                folder: this.getSelectedFolderId(),
+                                email: this.selectedEmailId,
+                            };
 
-                        this.applyParamsToUrl(params);
-                        this.updateLastUrl();
-                    });
-                }
-            }, wait);
+                            this.applyParamsToUrl(params);
+                            this.updateLastUrl();
+                        });
+                    }
+                },
+                wait
+            );
         },
 
         applyEmail: function () {
@@ -225,6 +244,5 @@ define(['views/email/list'], Dep => {
                 replace: true,
             });
         },
-
     });
 });
