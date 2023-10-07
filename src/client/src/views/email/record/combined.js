@@ -1,4 +1,4 @@
-define('email-combined-view:views/email/record/combined', ['views/email/record/list', 'email-combined-view:helpers/version'], function (Dep, VersionHelper) {
+define(['views/email/record/list', 'email-combined-view:helpers/version'], function (Dep, VersionHelper) {
     return Dep.extend({
 
         listLayout: [{
