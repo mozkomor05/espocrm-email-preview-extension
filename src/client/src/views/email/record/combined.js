@@ -29,6 +29,10 @@ define(['views/email/record/list', 'email-combined-view:helpers/version'], funct
             this.lastOpenId = null;
 
             this.on('remove', () => this.getParentView().clearView('combinedDetail'));
+
+            this.on('after:show-more', () => {
+                this.colorRows();
+            });
         },
 
         setupEvents: function () {
